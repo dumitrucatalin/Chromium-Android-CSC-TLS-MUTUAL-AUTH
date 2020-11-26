@@ -1,0 +1,3 @@
+0000000000000000000000000000000000000000 46f2e74de9d35577f9da5165c63c076edb93d1a9 Catalin Dumitru <dumitru.catalin96@yahoo.com> 1606401958 +0200	commit (initial): first commit
+46f2e74de9d35577f9da5165c63c076edb93d1a9 46f2e74de9d35577f9da5165c63c076edb93d1a9 Catalin Dumitru <dumitru.catalin96@yahoo.com> 1606401965 +0200	Branch: renamed refs/heads/master to refs/heads/master
+46f2e74de9d35577f9da5165c63c076edb93d1a9 ecd3387332f0bf4fc2f6d1756d21d44183f6ca1a Catalin Dumitru <dumitru.catalin96@yahoo.com> 1606402352 +0200	commit: First commit Chromium 65 with Conscrypt as main provider
