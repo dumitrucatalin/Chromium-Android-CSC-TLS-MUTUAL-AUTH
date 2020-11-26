@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/Chromium.iml" filepath="$PROJECT_DIR$/Chromium.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Chromium-Android-65.0.3325.230.iml" filepath="$PROJECT_DIR$/.idea/modules/Chromium-Android-65.0.3325.230.iml" group="Chromium-Android-65.0.3325.230" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/Chromium-Android-65.0.3325.230-app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/Chromium-Android-65.0.3325.230-app.iml" group="Chromium-Android-65.0.3325.230/app" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/browseractions/Chromium-Android-65.0.3325.230-browseractions.iml" filepath="$PROJECT_DIR$/.idea/modules/browseractions/Chromium-Android-65.0.3325.230-browseractions.iml" group="Chromium-Android-65.0.3325.230/browseractions" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/components/Chromium-Android-65.0.3325.230-components.iml" filepath="$PROJECT_DIR$/.idea/modules/components/Chromium-Android-65.0.3325.230-components.iml" group="Chromium-Android-65.0.3325.230/components" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/content/Chromium-Android-65.0.3325.230-content.iml" filepath="$PROJECT_DIR$/.idea/modules/content/Chromium-Android-65.0.3325.230-content.iml" group="Chromium-Android-65.0.3325.230/content" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/data_chart/Chromium-Android-65.0.3325.230-data_chart.iml" filepath="$PROJECT_DIR$/.idea/modules/data_chart/Chromium-Android-65.0.3325.230-data_chart.iml" group="Chromium-Android-65.0.3325.230/data_chart" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/media/Chromium-Android-65.0.3325.230-media.iml" filepath="$PROJECT_DIR$/.idea/modules/media/Chromium-Android-65.0.3325.230-media.iml" group="Chromium-Android-65.0.3325.230/media" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/ui/Chromium-Android-65.0.3325.230-ui.iml" filepath="$PROJECT_DIR$/.idea/modules/ui/Chromium-Android-65.0.3325.230-ui.iml" group="Chromium-Android-65.0.3325.230/ui" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/components/autofill/Chromium-Android-65.0.3325.230.components-autofill.iml" filepath="$PROJECT_DIR$/.idea/modules/components/autofill/Chromium-Android-65.0.3325.230.components-autofill.iml" group="Chromium-Android-65.0.3325.230/components/autofill" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/components/components_base/Chromium-Android-65.0.3325.230.components-components_base.iml" filepath="$PROJECT_DIR$/.idea/modules/components/components_base/Chromium-Android-65.0.3325.230.components-components_base.iml" group="Chromium-Android-65.0.3325.230/components/components_base" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/components/web_contents_delegate/Chromium-Android-65.0.3325.230.components-web_contents_delegate.iml" filepath="$PROJECT_DIR$/.idea/modules/components/web_contents_delegate/Chromium-Android-65.0.3325.230.components-web_contents_delegate.iml" group="Chromium-Android-65.0.3325.230/components/web_contents_delegate" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/components/autofill/autofill.iml" filepath="$PROJECT_DIR$/components/autofill/autofill.iml" />
+      <module fileurl="file://$PROJECT_DIR$/browseractions/browseractions.iml" filepath="$PROJECT_DIR$/browseractions/browseractions.iml" />
+      <module fileurl="file://$PROJECT_DIR$/components/components.iml" filepath="$PROJECT_DIR$/components/components.iml" />
+      <module fileurl="file://$PROJECT_DIR$/components/components_base/components_base.iml" filepath="$PROJECT_DIR$/components/components_base/components_base.iml" />
+      <module fileurl="file://$PROJECT_DIR$/content/content.iml" filepath="$PROJECT_DIR$/content/content.iml" />
+      <module fileurl="file://$PROJECT_DIR$/data_chart/data_chart.iml" filepath="$PROJECT_DIR$/data_chart/data_chart.iml" />
+      <module fileurl="file://$PROJECT_DIR$/media/media.iml" filepath="$PROJECT_DIR$/media/media.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ui/ui.iml" filepath="$PROJECT_DIR$/ui/ui.iml" />
+      <module fileurl="file://$PROJECT_DIR$/components/web_contents_delegate/web_contents_delegate.iml" filepath="$PROJECT_DIR$/components/web_contents_delegate/web_contents_delegate.iml" />
+    </modules>
+  </component>
+</project>
