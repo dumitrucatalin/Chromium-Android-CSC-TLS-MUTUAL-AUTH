@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="Gradle: :conscrypt-android-debug:@aar">
+    <CLASSES>
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/conscrypt-android-debug.aar/5f3f3ed3f12190c036fb45040b27413c/AndroidManifest.xml" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/conscrypt-android-debug.aar/5f3f3ed3f12190c036fb45040b27413c/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/conscrypt-android-debug.aar/5f3f3ed3f12190c036fb45040b27413c/res" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
