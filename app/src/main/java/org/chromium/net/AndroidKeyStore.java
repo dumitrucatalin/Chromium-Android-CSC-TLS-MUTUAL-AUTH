@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import static org.chromium.build.BuildHooksAndroid.getResources;
 
-import org.conscrypt.CloudSignatureSingleton;
+//import org.conscrypt.CloudSignatureSingleton;
 /**
  * Specifies all the dependencies from the native OpenSSL engine on an Android KeyStore.
  */
@@ -105,9 +105,9 @@ public class AndroidKeyStore {
         // http://docs.oracle.com/javase/6/docs/technotes/guides/security/StandardNames.html
         Signature signature = null;
         try {
-            CloudSignatureSingleton.getInstance().mAuthorizationToken="token";
-            CloudSignatureSingleton.getInstance().mTokenType="bearer";
-            CloudSignatureSingleton.getInstance().mCredentialId="id123455";
+//            CloudSignatureSingleton.getInstance().mAuthorizationToken="token";
+//            CloudSignatureSingleton.getInstance().mTokenType="bearer";
+//            CloudSignatureSingleton.getInstance().mCredentialId="id123455";
 //            signature = Signature.getInstance(algorithm);
             signature = Signature.getInstance(algorithm, "Conscrypt");
         } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
