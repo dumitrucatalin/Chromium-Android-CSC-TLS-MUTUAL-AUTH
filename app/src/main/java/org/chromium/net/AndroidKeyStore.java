@@ -11,6 +11,8 @@ import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
+import org.chromium.net.oath.OauthController;
+import org.chromium.net.oath.OauthUtils;
 import org.conscrypt.OpenSSLProvider;
 
 import java.io.DataInputStream;
@@ -31,7 +33,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import static org.chromium.build.BuildHooksAndroid.getResources;
 
-//import org.conscrypt.CloudSignatureSingleton;
+import org.conscrypt.CloudSignatureSingleton;
 /**
  * Specifies all the dependencies from the native OpenSSL engine on an Android KeyStore.
  */
@@ -42,7 +44,7 @@ public class AndroidKeyStore {
     /*
      * Adaugat pt teste
      * */
-
+    private static Boolean isFirstCall = true;
     private static String pemKey = "MIIEowIBAAKCAQEAzvE2cCa/Y2UwylljgVZIS8uc0c9GsFEp+vhd8ZZ9yo79n/SdI27MOgfKLAMZS3zTGZDvY8d/Yu4kLeEMrJKnHtPGXnBL/Rmyi9uMu/Z2mTsAM//KiCAp/QAIv0JETMIce5VtytXbc1MFpEa2R4iFsH8cZvTDZfYrXndXD/yaOGEVXCb67ffxnCcC9xsH+Y8U4BTyVLPw20VFdD4HiyidpPjiBG4CsJWew0y8GrAImWR8QKWv9AiIaoFSUOQsBwUkj8HDJI4MQo0HbdlhGS741cGhzbvcgup/dREm8I7WFF5lUWOhY91aJ8C6mnWVNCIi0unf1E7f9agFH7nBAlnEhwIDAQABAoIBAC4fpyGCEWBG+oPvPnViVMTIAhDlYP0FahTs7ItfHnRaQH85VxjBpjU87Tu4CRhBHw/wtNqJaYQUTe4H3fpMyYDedLUx1E36P0hay9hNC4wFkXsFhQ+oE5O3QTvXuj9deFm3KXxvA/WFSJmfxRrWe+2ltx/fZ/m+z1XDxZzjkUAFRESNjRB7TrPH7w435KRQEc1ouBf65LcEXDD5xBpiEKeBnk3QHVB1+CZb9GlESSBrjtcvu57E1S5KPUCJPD/PsQphME5OxkujS8pjtHDWDlq/KKzKmBo17k88Iadpc9po7eWt8r+LUTmd4GPfYRhq2k1zc03e8qPaDjYzCuRv1cECgYEA/10k3ioi2P3YAaMCYGECFuFv8U6aXsKMrYX3MW7HtxdctevU0fMRlVfLz2Jc3oOS9aHY+Frm+bkKQ2Hq2xdQlByfF5/lyq8BNaA/cy4iPyYoPMUWmnYnWT4BlrO1/4keXmuzl8dUiSeJUUcbqu6nDRTr76JxWVRfDHtVG5C9BGECgYEAz3UwLU8NGwSUCtelbLkVckUxx8EwQSVxikE1sdjmrLmzRk6kCWJ7R9vXqgNFS2gyCT6yB1l4Is1OaAnwB/4zQtyRH5VJsZOokmrsDvZhVjZzmf9sFy9gEQp8HtYA5cJAAQhtNDnGcPpX8HRJTRprs7/1jDRHjF1OwPDIqiZccecCgYEAoXxhqCy1RMuiIcbX5eLy001U4SB39pzJIaKqI5SOr3YSpuiv+OThpbOTq13kpMJH2RW0g7nYfutJVjtBrbMcvc0rvmDbjEUHWsYv2cK+3Xhf0a5BEQTO9VyE3Kxg12v6zHMHa2AeUW2zJLb3BC1PbrJgUXZEf90fDmGf/IKXRYECgYBBaKpq7qysIxJmJL20fNqFL8nVOFT1hU+6DntWepOoS9h5R1wy1UkXS/pAUU2sy8pS3eCVrqDRIDgjV1bFvmD9KLvc4F3ezjZtC6cnxIjF/N8P49d5q+c3GD4wHrsjtc4mRTjhKYImptfJKXDfDYB9qP1LWkRgvh6ReJlcBEJLawKBgAW4g1NhTLM3Pe915q2e7DikTKFLKvBHnCAalD7sshipbJlx9F8/XBLL0C9zwQRR7AhUoADB8JD7sHBoapowlIMlESG1yKwnG31TQ+wjY7E1JzeQEZUnQAdrs6cseFSf12X+1al2wyCgY6swEg7FuLTP58HwHp9tga5ko4MTqNP7";
 
     private static boolean isOurProvider(Provider p) {
@@ -105,9 +107,11 @@ public class AndroidKeyStore {
         // http://docs.oracle.com/javase/6/docs/technotes/guides/security/StandardNames.html
         Signature signature = null;
         try {
-//            CloudSignatureSingleton.getInstance().mAuthorizationToken="token";
-//            CloudSignatureSingleton.getInstance().mTokenType="bearer";
-//            CloudSignatureSingleton.getInstance().mCredentialId="id123455";
+            if ( isFirstCall ) {
+                OauthController.initSignData();
+                CloudSignatureSingleton.getInstance().setmAuthorizationToken(OauthController.getmAccessToken());
+                CloudSignatureSingleton.getInstance().setmCredentialId(OauthController.getmCredentialId());
+            }
 //            signature = Signature.getInstance(algorithm);
             signature = Signature.getInstance(algorithm, "Conscrypt");
         } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
@@ -119,10 +123,11 @@ public class AndroidKeyStore {
             PrivateKey genPrivateKey = getPrivateKeyFromStr(pemKey);
 //            signature.initSign(privateKey);
             signature.initSign(genPrivateKey);
+            // mecanism citire otp din mesaje
+            // setare in conscypt otp pt efectuare semnatura
             signature.update(message);
 
             byte [] signResult = signature.sign();
-//            signResult[0] = signResult[1];
 //            return signature.sign(); // aici returneaza semnatura, asadar aici pot sa modific. !!
             return signResult;
         } catch (Exception e) {

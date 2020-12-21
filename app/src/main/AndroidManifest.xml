@@ -16,7 +16,7 @@ by a child template that "extends" this file.
     tools:ignore="MissingVersion">
     <!-- android:versionCode and android:versionName is set through gyp. See build/common.gypi -->
 
-    <uses-sdk android:minSdkVersion="16" android:targetSdkVersion="27" />
+    <uses-sdk android:minSdkVersion="16" android:targetSdkVersion="28" />
     <uses-feature android:glEsVersion="0x00020000" />
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
@@ -148,6 +148,20 @@ by a child template that "extends" this file.
         <activity-alias android:name="com.google.android.apps.chrome.IntentDispatcher"
             android:targetActivity="org.chromium.chrome.browser.document.ChromeLauncherActivity"
             android:exported="true">
+
+            <!-- An intent-filter for the OAuth Redirect -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:scheme="com.csc.tls.auth"></data>
+                <!--data scheme must be the same with BASE_REDIRECT_URI from MainActivity-->
+            </intent-filter>
+            <!-- An intent-filter for the OAuth Redirect -->
+
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.NOTIFICATION_PREFERENCES" />

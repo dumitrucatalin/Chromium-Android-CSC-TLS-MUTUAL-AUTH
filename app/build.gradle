@@ -62,6 +62,7 @@ idea {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation(name:'conscrypt-android-debug', ext:'aar')
+    implementation 'com.squareup.okhttp3:okhttp:3.10.0'
     implementation "com.android.support:appcompat-v7:$rootProject.ext.supportLibraryVersion"
     implementation "com.android.support:design:$rootProject.ext.supportLibraryVersion"
     implementation "com.android.support:gridlayout-v7:$rootProject.ext.supportLibraryVersion"
