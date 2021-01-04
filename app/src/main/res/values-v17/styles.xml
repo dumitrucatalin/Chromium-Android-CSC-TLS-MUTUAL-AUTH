@@ -124,6 +124,7 @@
         <item name="chrometint">@color/dark_mode_tint</item>
     </style>
 
+
     <style name="ModalDialogTheme" parent="AlertDialogTheme">
         <item name="android:windowFrame">@null</item>
         <item name="android:backgroundDimEnabled">false</item>

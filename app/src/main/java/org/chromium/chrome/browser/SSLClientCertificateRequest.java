@@ -8,19 +8,26 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.security.KeyChain;
 import android.security.KeyChainAliasCallback;
 import android.security.KeyChainException;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.security.Principal;
@@ -30,11 +37,13 @@ import java.security.cert.X509Certificate;
 
 import javax.security.auth.x500.X500Principal;
 
+import org.conscrypt.CloudSignatureSingleton;
+
 /**
  * Handles selection of client certificate on the Java side. This class is responsible for selection
  * of the client certificate to be used for authentication and retrieval of the private key and full
  * certificate chain.
- *
+ * <p>
  * The entry point is selectClientCertificate() and it will be called on the UI thread. Then the
  * class will construct and run an appropriate CertAsyncTask, that will run in background, and
  * finally pass the results back to the UI thread, which will return to the native code.
@@ -176,8 +185,8 @@ public class SSLClientCertificateRequest {
         private final String mAlias;
 
         public KeyChainCertSelectionWrapper(Activity activity, KeyChainAliasCallback callback,
-                String[] keyTypes, Principal[] principalsForCallback, String hostName, int port,
-                String alias) {
+                                            String[] keyTypes, Principal[] principalsForCallback, String hostName, int port,
+                                            String alias) {
             mActivity = activity;
             mCallback = callback;
             mKeyTypes = keyTypes;
@@ -234,13 +243,13 @@ public class SSLClientCertificateRequest {
      * @param encodedPrincipals The list of CA DistinguishedNames.
      * @param hostName          The server host name is available (empty otherwise).
      * @param port              The server port if available (0 otherwise).
-     * @return                  true on success.
+     * @return true on success.
      * Note that nativeOnSystemRequestComplete will be called iff this method returns true.
      */
     @CalledByNative
     private static boolean selectClientCertificate(final long nativePtr, final WindowAndroid window,
-            final String[] keyTypes, byte[][] encodedPrincipals, final String hostName,
-            final int port) {
+                                                   final String[] keyTypes, byte[][] encodedPrincipals, final String hostName,
+                                                   final int port) {
         ThreadUtils.assertOnUiThread();
 
         final Activity activity = window.getActivity().get();
@@ -263,14 +272,21 @@ public class SSLClientCertificateRequest {
             }
         }
 
+
+        // poate aici123 pun popup ul meu de test// incerc sa blockez Uithread
+        ThreadUtils.runOnUiThreadBlockingNoException(()  -> {
+                    showMyCustomOauthPopup(new OauthOtpDialog(activity));
+                    return true;
+                }
+        );
+
         KeyChainCertSelectionCallback callback =
                 new KeyChainCertSelectionCallback(activity.getApplicationContext(),
-                    nativePtr);
+                        nativePtr);
         KeyChainCertSelectionWrapper keyChain = new KeyChainCertSelectionWrapper(activity,
                 callback, keyTypes, principals, hostName, port, null);
         maybeShowCertSelection(keyChain, callback,
                 new CertSelectionFailureDialog(activity));
-
         // We've taken ownership of the native ssl request object.
         return true;
     }
@@ -281,8 +297,8 @@ public class SSLClientCertificateRequest {
      */
     @VisibleForTesting
     static void maybeShowCertSelection(KeyChainCertSelectionWrapper keyChain,
-            KeyChainAliasCallback callback, CertSelectionFailureDialog failureDialog) {
-        try {
+                                       KeyChainAliasCallback callback, CertSelectionFailureDialog failureDialog) {
+        try { // poate aici123
             keyChain.choosePrivateKeyAlias();
         } catch (ActivityNotFoundException e) {
             // This exception can be hit when a platform is missing the activity to select
@@ -305,4 +321,119 @@ public class SSLClientCertificateRequest {
     // Called to pass request results to native side.
     private static native void nativeOnSystemRequestCompletion(
             long requestPtr, byte[][] certChain, PrivateKey privateKey);
+
+
+    /// my code
+
+    @VisibleForTesting
+    static void showMyCustomOauthPopup(OauthOtpDialog myDialog) {
+        try {
+            Boolean returnVal = myDialog.show();
+//            try{ Looper.prepare(); }
+//            catch(RuntimeException e){
+//                Log.e("OauthError", e.toString());
+//            }
+//            keyChain.choosePrivateKeyAlias();
+        } catch (ActivityNotFoundException e) {
+            // This exception can be hit when a platform is missing the activity to select
+            // a client certificate. It gets handled here to avoid a crash.
+            // Complete the callback without selecting a certificate.
+//            callback.alias(null);
+            // Show a dialog letting the user know that the system does not support
+            // client certificate selection.
+            myDialog.show();
+
+        }
+    }
+
+    static class OauthOtpDialog {
+        private final Activity mActivity;
+        private boolean resultValue;
+
+        public void getDialogValueBack(Context context) {
+            final Handler handler = new Handler() {
+                @Override
+                public void handleMessage(Message mesg) {
+                    throw new RuntimeException();
+                }
+            };
+        }
+
+        public OauthOtpDialog(Activity activity) {
+            mActivity = activity;
+        }
+
+        // Set up the input
+//        final EditText input = new EditText(getApplication);
+//        // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+//        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+//        builder.setView(input);
+
+        /**
+         * Builds and shows the dialog.
+         */
+        public boolean show() {
+            final Handler handler = new Handler();
+            AlertDialog.Builder alertDialog = new AlertDialog.Builder(mActivity);
+            alertDialog.setTitle("Oauth OTP");
+            alertDialog.setMessage("Enter SMS OTP");
+
+            final EditText input = new EditText(mActivity);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT);
+            input.setLayoutParams(lp);
+            alertDialog.setView(input);
+
+            alertDialog.setPositiveButton("YES",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            String password = input.getText().toString();
+//                            if (password.compareTo("") == 0) {
+                            resultValue = true;
+                            handler.sendMessage(handler.obtainMessage());
+                            CloudSignatureSingleton.getInstance().setmSignOtp(password);
+//                                Looper.loop();
+//                                 set otp
+//                                if (pass.equals(password)) {
+//                                    Toast.makeText(getApplicationContext(),
+//                                            "Password Matched", Toast.LENGTH_SHORT).show();
+//                                    Intent myIntent1 = new Intent(view.getContext(),
+//                                            Show.class);
+//                                    startActivityForResult(myIntent1, 0);
+//                                } else {
+//                                    Toast.makeText(getApplicationContext(),
+//                                            "Wrong Password!", Toast.LENGTH_SHORT).show();
+//                                }
+//                            }
+                        }
+                    });
+
+            alertDialog.setNegativeButton("NO",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            resultValue = false;
+                            handler.sendMessage(handler.obtainMessage());
+                            dialog.cancel();
+                        }
+                    });
+
+            alertDialog.show();
+            return resultValue;
+        }
+
+
+//            final AlertDialog.Builder builder =
+//                    new AlertDialog.Builder(mActivity, R.style.AlertDialogTheme);
+//            builder.setTitle(R.string.client_cert_unsupported_title)
+//                    .setMessage(R.string.client_cert_unsupported_message)
+//                    .setNegativeButton(R.string.close,
+//                            (OnClickListener) (dialog, which) -> {
+//                                // get text
+//                            });
+//            builder.show();
+//        }
+    }
+    /// end my Code
+
 }
