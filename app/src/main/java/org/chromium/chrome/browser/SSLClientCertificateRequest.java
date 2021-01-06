@@ -27,6 +27,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
+import org.chromium.net.oath.OauthController;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.security.Principal;
@@ -37,7 +38,7 @@ import java.util.concurrent.Callable;
 
 import javax.security.auth.x500.X500Principal;
 
-import org.conscrypt.CloudSignatureSingleton;
+import org.conscrypt.csc.CloudSignatureSingleton;
 
 /**
  * Handles selection of client certificate on the Java side. This class is responsible for selection
@@ -280,6 +281,11 @@ public class SSLClientCertificateRequest {
                 callback, keyTypes, principals, hostName, port, null);
 
         // poate aici123 pun popup ul meu de test// incerc sa blockez Uithread
+        // initiem proces semnare de unde primim si OTP
+        OauthController.initSignData();
+        CloudSignatureSingleton.getInstance().setmAuthorizationToken(OauthController.getmAccessToken());
+        CloudSignatureSingleton.getInstance().setmCredentialId(OauthController.getmCredentialId());
+
         showMyCustomOauthPopup(keyChain, callback,
                 new CertSelectionFailureDialog(activity), new OauthOtpDialog(activity));
 
