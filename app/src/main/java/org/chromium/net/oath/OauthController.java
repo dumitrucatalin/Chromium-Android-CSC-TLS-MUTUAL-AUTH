@@ -30,7 +30,7 @@ public class OauthController {
     private static final String TAG = "OauthController";
     private static final String CREDENTIAL_ID_URI = CSC_BASE_URI + "credentials/list";
     private static final String SEND_OTP_URI = CSC_BASE_URI + "credentials/sendOTP";
-
+    private static final String CREDENTIALS_INFO_URI = CSC_BASE_URI + "credentials/info";
 
     private String mClientId;
     private String mClientSecret;
@@ -43,6 +43,8 @@ public class OauthController {
     private static String mTokenType;
     private static String mExpiresIn;
     private static String mCredentialId;
+    private static String mClientCertificates;
+
 
     public static String getmAccessToken() {
         return mAccessToken;
@@ -166,6 +168,45 @@ public class OauthController {
             Log.e(TAG, e.toString());
         }
 
+    }
+
+
+    public static String getClientCertificates() {
+        try {
+            sendCredentialIDReq();
+            getClientCertificatesReq();
+            return  mClientCertificates;
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e(TAG, e.toString());
+        }
+        return null;
+    }
+
+
+    private static void getClientCertificatesReq() throws InterruptedException {
+
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String reqBodyStr = "{\r\n\"credentialID\": \"" + mCredentialId + "\",\r\n\"certificates\": \"single\",\r\n\"certInfo\": true,\r\n\"authInfo\": true\r\n}";
+                    String response = OauthUtils.okhttpSignRequestPost(CREDENTIALS_INFO_URI, reqBodyStr, mAccessToken);
+                    if (response != null) {
+                        JSONObject jsonResponse = null;
+                        jsonResponse = new JSONObject(response);
+                        JSONArray attributeArray = jsonResponse.getJSONObject("cert").getJSONArray("certificates");
+                        mClientCertificates = attributeArray.get(0).toString().replaceAll("\\r\\n", ""); ; // trebuie scos /r/n
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Log.e(TAG, e.toString());
+                }
+
+            }
+        });
+        thread.start();
+        thread.join();
     }
 
 

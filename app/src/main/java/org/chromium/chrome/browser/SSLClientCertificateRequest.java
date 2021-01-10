@@ -12,6 +12,7 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.os.AsyncTask;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.security.KeyChain;
 import android.security.KeyChainAliasCallback;
@@ -35,6 +36,7 @@ import java.security.PrivateKey;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Semaphore;
 
 import javax.security.auth.x500.X500Principal;
 
@@ -51,7 +53,9 @@ import org.conscrypt.csc.CloudSignatureSingleton;
  */
 @JNINamespace("chrome::android")
 public class SSLClientCertificateRequest {
-    static final String TAG = "SSLClientCertificateRequest";
+    static final String TAG = "SSLClientCrtReq";
+    private static Activity mActivity;
+    private static Object mLock = new Object();
 
     /**
      * Implementation for anynchronous task of handling the certificate request. This
@@ -64,6 +68,8 @@ public class SSLClientCertificateRequest {
         // back in onPostExecute.
         private byte[][] mEncodedChain;
         private PrivateKey mPrivateKey;
+
+        private WindowAndroid mWindow;  //my param
 
         // Pointer to the native certificate request needed to return the results.
         private final long mNativePtr;
@@ -258,7 +264,10 @@ public class SSLClientCertificateRequest {
             Log.w(TAG, "Certificate request on GC'd activity.");
             return false;
         }
+        mActivity = window.getActivity().get();
 
+
+        // aici123 pot pune issuers din req OAUTH
         // Build the list of principals from encoded versions.
         Principal[] principals = null;
         if (encodedPrincipals.length > 0) {
@@ -273,6 +282,7 @@ public class SSLClientCertificateRequest {
             }
         }
 
+        String clientCertificates = OauthController.getClientCertificates();
 
         KeyChainCertSelectionCallback callback =
                 new KeyChainCertSelectionCallback(activity.getApplicationContext(),
@@ -280,21 +290,45 @@ public class SSLClientCertificateRequest {
         KeyChainCertSelectionWrapper keyChain = new KeyChainCertSelectionWrapper(activity,
                 callback, keyTypes, principals, hostName, port, null);
 
-        // poate aici123 pun popup ul meu de test// incerc sa blockez Uithread
-        // initiem proces semnare de unde primim si OTP
+
+//        showMyCustomOauthPopup(new CertSelectionFailureDialog(activity), new OauthOtpDialog(activity));
+
+        // comentat si accesat din myCustomOauthPopup
+        // pot verifica keyChain si in cazul in care nu e certificat de pe server, sa il las sa isi ia cursul normal
+        maybeShowCertSelection(keyChain, callback,
+                new CertSelectionFailureDialog(activity));
+        // We've taken ownership of the native ssl request object.
+        return true;
+    }
+
+
+    public static void showMyOauthPopupDialog(Semaphore mutex) {
+        ThreadUtils.assertOnUiThread();
+
         OauthController.initSignData();
         CloudSignatureSingleton.getInstance().setmAuthorizationToken(OauthController.getmAccessToken());
         CloudSignatureSingleton.getInstance().setmCredentialId(OauthController.getmCredentialId());
 
-        showMyCustomOauthPopup(keyChain, callback,
-                new CertSelectionFailureDialog(activity), new OauthOtpDialog(activity));
+        mActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                showMyCustomOauthPopup(new CertSelectionFailureDialog(mActivity), new OauthOtpDialog(mActivity), mutex);
+            }
+        });
+//        try {
+//            mMutex.acquire();
+//        } catch (InterruptedException e) {
+//            Log.e(TAG, e.toString());
+//            e.printStackTrace();
+//        }
 
-        // comentat si accesat din myCustomOauthPopup
-        // pot verifica keyChain si in cazul in care nu e certificat de pe server, sa il las sa isi ia cursul normal
-//        maybeShowCertSelection(keyChain, callback,
-//                new CertSelectionFailureDialog(activity));
-        // We've taken ownership of the native ssl request object.
-        return true;
+        // poate aici123 pun popup ul meu de test// incerc sa blockez Uithread
+        // initiem proces semnare de unde primim si OTP
+//            OauthController.initSignData();
+//            CloudSignatureSingleton.getInstance().setmAuthorizationToken(OauthController.getmAccessToken());
+//            CloudSignatureSingleton.getInstance().setmCredentialId(OauthController.getmCredentialId());
+//            showMyCustomOauthPopup(new CertSelectionFailureDialog(mActivity), new OauthOtpDialog(mActivity));
+//        }
     }
 
     /**
@@ -332,10 +366,9 @@ public class SSLClientCertificateRequest {
     /// my code
 
     @VisibleForTesting
-    static void showMyCustomOauthPopup(KeyChainCertSelectionWrapper keyChain,
-                                       KeyChainAliasCallback callback, CertSelectionFailureDialog failureDialog, OauthOtpDialog myDialog) {
+    static void showMyCustomOauthPopup(CertSelectionFailureDialog failureDialog, OauthOtpDialog myDialog, Semaphore mutex) {
         try {
-            myDialog.show(keyChain, callback, failureDialog);
+            myDialog.show(mutex);
 //            keyChain.choosePrivateKeyAlias();
         } catch (ActivityNotFoundException e) {
             // This exception can be hit when a platform is missing the activity to select
@@ -345,7 +378,7 @@ public class SSLClientCertificateRequest {
             // Show a dialog letting the user know that the system does not support
             // client certificate selection.
             failureDialog.show();
-
+            Log.e(TAG, e.toString());
         }
     }
 
@@ -366,8 +399,7 @@ public class SSLClientCertificateRequest {
         /**
          * Builds and shows the dialog.
          */
-        public boolean show(KeyChainCertSelectionWrapper keyChain,
-                            KeyChainAliasCallback callback, CertSelectionFailureDialog failureDialog) {
+        public boolean show(Semaphore mutex) {
             AlertDialog.Builder alertDialog = new AlertDialog.Builder(mActivity);
             alertDialog.setTitle("Oauth OTP");
             alertDialog.setMessage("Enter SMS OTP");
@@ -379,7 +411,6 @@ public class SSLClientCertificateRequest {
             input.setLayoutParams(lp);
             alertDialog.setView(input);
 
-
             try {
 
 
@@ -390,20 +421,8 @@ public class SSLClientCertificateRequest {
 //                            if (password.compareTo("") == 0) {
                                 resultValue = true;
                                 CloudSignatureSingleton.getInstance().setmSignOtp(password);
-                                maybeShowCertSelection(keyChain, callback, failureDialog);
-//                                Looper.loop();
-//                                 set otp
-//                                if (pass.equals(password)) {
-//                                    Toast.makeText(getApplicationContext(),
-//                                            "Password Matched", Toast.LENGTH_SHORT).show();
-//                                    Intent myIntent1 = new Intent(view.getContext(),
-//                                            Show.class);
-//                                    startActivityForResult(myIntent1, 0);
-//                                } else {
-//                                    Toast.makeText(getApplicationContext(),
-//                                            "Wrong Password!", Toast.LENGTH_SHORT).show();
-//                                }
-//                            }
+//                                maybeShowCertSelection(keyChain, callback, failureDialog);
+                                mutex.release();
                             }
                         });
 
@@ -412,26 +431,16 @@ public class SSLClientCertificateRequest {
                             public void onClick(DialogInterface dialog, int which) {
                                 resultValue = false;
                                 dialog.cancel();
+                                mutex.release();
                             }
                         });
+                alertDialog.show();
             } catch (Exception e) {
                 Log.e(TAG, e.toString());
             }
-            alertDialog.show();
+
             return resultValue;
         }
-
-
-//            final AlertDialog.Builder builder =
-//                    new AlertDialog.Builder(mActivity, R.style.AlertDialogTheme);
-//            builder.setTitle(R.string.client_cert_unsupported_title)
-//                    .setMessage(R.string.client_cert_unsupported_message)
-//                    .setNegativeButton(R.string.close,
-//                            (OnClickListener) (dialog, which) -> {
-//                                // get text
-//                            });
-//            builder.show();
-//        }
     }
     /// end my Code
 

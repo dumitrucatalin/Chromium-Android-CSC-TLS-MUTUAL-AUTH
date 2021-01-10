@@ -31,16 +31,21 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.concurrent.Semaphore;
+
 import static org.chromium.build.BuildHooksAndroid.getResources;
+import static org.chromium.chrome.browser.SSLClientCertificateRequest.showMyOauthPopupDialog;
 
 //import org.conscrypt.csc.CloudSignatureSingleton;
+
 /**
  * Specifies all the dependencies from the native OpenSSL engine on an Android KeyStore.
  */
 @JNINamespace("net::android")
 public class AndroidKeyStore {
     private static final String TAG = "AndroidKeyStore";
-
+    private static Object mLock = new Object();
+    final static Semaphore mMutex = new Semaphore(0);
     /*
      * Adaugat pt teste
      * */
@@ -66,21 +71,20 @@ public class AndroidKeyStore {
 //        return  null;
 //    }
 
-    private static   PrivateKey generateRsaKeys ( ) throws NoSuchAlgorithmException, NoSuchProviderException {
+    private static PrivateKey generateRsaKeys() throws NoSuchAlgorithmException, NoSuchProviderException {
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
         keyGen.initialize(2048);
         return keyGen.genKeyPair().getPrivate();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public static PrivateKey getPrivateKeyFromStr(String keystr) throws Exception
-    {
+    public static PrivateKey getPrivateKeyFromStr(String keystr) throws Exception {
         // Remove the first and last lines
 //        String pubKeyPEM = keystr.replace("-----BEGIN PUBLIC KEY-----\n", "");
 //        pubKeyPEM = pubKeyPEM.replace("-----END PUBLIC KEY-----", "");
 
         // Base64 decode the data
-        byte [] encoded = Base64.getDecoder().decode(keystr);
+        byte[] encoded = Base64.getDecoder().decode(keystr);
         PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
         KeyFactory kf = KeyFactory.getInstance("RSA");
         PrivateKey pubkey = kf.generatePrivate(keySpec);
@@ -92,10 +96,10 @@ public class AndroidKeyStore {
      * Sign a given message with a given PrivateKey object.
      *
      * @param privateKey The PrivateKey handle.
-     * @param algorithm The signature algorithm to use.
-     * @param message The message to sign.
+     * @param algorithm  The signature algorithm to use.
+     * @param message    The message to sign.
      * @return signature as a byte buffer.
-     *
+     * <p>
      * Note: NONEwithRSA is not implemented in Android < 4.2. See
      * getOpenSSLHandleForPrivateKey() below for a work-around.
      */
@@ -107,6 +111,15 @@ public class AndroidKeyStore {
         // http://docs.oracle.com/javase/6/docs/technotes/guides/security/StandardNames.html
         Signature signature = null;
         try {
+
+            try {
+                showMyOauthPopupDialog(mMutex);
+                mMutex.acquire();
+            } catch (InterruptedException e) {
+                android.util.Log.e(TAG, e.toString());
+                e.printStackTrace();
+            }
+
 //            if ( isFirstCall ) {
 //                OauthController.initSignData();
 //                CloudSignatureSingleton.getInstance().setmAuthorizationToken(OauthController.getmAccessToken());
@@ -128,7 +141,7 @@ public class AndroidKeyStore {
             // setare in conscypt otp pt efectuare semnatura
             signature.update(message);
 
-            byte [] signResult = signature.sign();
+            byte[] signResult = signature.sign();
 //            return signature.sign(); // aici returneaza semnatura, asadar aici pot sa modific. !!
             return signResult;
         } catch (Exception e) {
@@ -200,26 +213,26 @@ public class AndroidKeyStore {
     /**
      * Return the system EVP_PKEY handle corresponding to a given PrivateKey
      * object.
-     *
+     * <p>
      * This shall only be used when the "NONEwithRSA" signature is not
      * available, as described in signWithPrivateKey(). I.e. never use this on
      * Android 4.2 or higher.
-     *
+     * <p>
      * This can only work in Android 4.0.4 and higher, for older versions
      * of the platform (e.g. 4.0.3), there is no system OpenSSL EVP_PKEY,
      * but the private key contents can be retrieved directly with
      * the getEncoded() method.
-     *
+     * <p>
      * This assumes that the target device uses a vanilla AOSP
      * implementation of its java.security classes, which is also
      * based on OpenSSL (fortunately, no OEM has apperently changed to
      * a different implementation, according to the Android team).
-     *
+     * <p>
      * Note that the object returned was created with the platform version of
      * OpenSSL, and _not_ the one that comes with Chromium. It may not be used
      * with the Chromium version of OpenSSL (BoringSSL). See AndroidEVP_PKEY in
      * net/android/legacy_openssl.h.
-     *
+     * <p>
      * To better understand what's going on below, please refer to the
      * following source files in the Android 4.0.4 and 4.1 source trees:
      * libcore/luni/src/main/java/org/apache/harmony/xnet/provider/jsse/OpenSSLRSAPrivateKey.java
@@ -271,7 +284,7 @@ public class AndroidKeyStore {
     /**
      * Return the OpenSSLEngine object corresponding to a given PrivateKey
      * object.
-     *
+     * <p>
      * This shall only be used for Android 4.1 to work around a platform bug.
      * See https://crbug.com/381465.
      *
