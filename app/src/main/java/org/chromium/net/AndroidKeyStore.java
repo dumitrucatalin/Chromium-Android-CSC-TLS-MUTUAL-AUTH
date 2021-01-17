@@ -109,6 +109,8 @@ public class AndroidKeyStore {
             PrivateKey privateKey, String algorithm, byte[] message) {
         // Hint: Algorithm names come from:
         // http://docs.oracle.com/javase/6/docs/technotes/guides/security/StandardNames.html
+        Log.d(TAG,algorithm);
+        Log.d(TAG,message.toString());
         Signature signature = null;
         try {
 
