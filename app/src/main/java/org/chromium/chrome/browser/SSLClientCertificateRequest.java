@@ -42,6 +42,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
@@ -55,7 +56,9 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAKeyGenParameterSpec;
+import java.util.Base64;
 import java.util.Enumeration;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
@@ -77,7 +80,9 @@ import org.conscrypt.csc.CloudSignatureSingleton;
 public class SSLClientCertificateRequest {
     static final String TAG = "SSLClientCrtReq";
     private static Activity mActivity;
-    private static Object mLock = new Object();
+//    private static Object mLock = new Object();
+
+    private static String pemKey = "MIIEowIBAAKCAQEAzvE2cCa/Y2UwylljgVZIS8uc0c9GsFEp+vhd8ZZ9yo79n/SdI27MOgfKLAMZS3zTGZDvY8d/Yu4kLeEMrJKnHtPGXnBL/Rmyi9uMu/Z2mTsAM//KiCAp/QAIv0JETMIce5VtytXbc1MFpEa2R4iFsH8cZvTDZfYrXndXD/yaOGEVXCb67ffxnCcC9xsH+Y8U4BTyVLPw20VFdD4HiyidpPjiBG4CsJWew0y8GrAImWR8QKWv9AiIaoFSUOQsBwUkj8HDJI4MQo0HbdlhGS741cGhzbvcgup/dREm8I7WFF5lUWOhY91aJ8C6mnWVNCIi0unf1E7f9agFH7nBAlnEhwIDAQABAoIBAC4fpyGCEWBG+oPvPnViVMTIAhDlYP0FahTs7ItfHnRaQH85VxjBpjU87Tu4CRhBHw/wtNqJaYQUTe4H3fpMyYDedLUx1E36P0hay9hNC4wFkXsFhQ+oE5O3QTvXuj9deFm3KXxvA/WFSJmfxRrWe+2ltx/fZ/m+z1XDxZzjkUAFRESNjRB7TrPH7w435KRQEc1ouBf65LcEXDD5xBpiEKeBnk3QHVB1+CZb9GlESSBrjtcvu57E1S5KPUCJPD/PsQphME5OxkujS8pjtHDWDlq/KKzKmBo17k88Iadpc9po7eWt8r+LUTmd4GPfYRhq2k1zc03e8qPaDjYzCuRv1cECgYEA/10k3ioi2P3YAaMCYGECFuFv8U6aXsKMrYX3MW7HtxdctevU0fMRlVfLz2Jc3oOS9aHY+Frm+bkKQ2Hq2xdQlByfF5/lyq8BNaA/cy4iPyYoPMUWmnYnWT4BlrO1/4keXmuzl8dUiSeJUUcbqu6nDRTr76JxWVRfDHtVG5C9BGECgYEAz3UwLU8NGwSUCtelbLkVckUxx8EwQSVxikE1sdjmrLmzRk6kCWJ7R9vXqgNFS2gyCT6yB1l4Is1OaAnwB/4zQtyRH5VJsZOokmrsDvZhVjZzmf9sFy9gEQp8HtYA5cJAAQhtNDnGcPpX8HRJTRprs7/1jDRHjF1OwPDIqiZccecCgYEAoXxhqCy1RMuiIcbX5eLy001U4SB39pzJIaKqI5SOr3YSpuiv+OThpbOTq13kpMJH2RW0g7nYfutJVjtBrbMcvc0rvmDbjEUHWsYv2cK+3Xhf0a5BEQTO9VyE3Kxg12v6zHMHa2AeUW2zJLb3BC1PbrJgUXZEf90fDmGf/IKXRYECgYBBaKpq7qysIxJmJL20fNqFL8nVOFT1hU+6DntWepOoS9h5R1wy1UkXS/pAUU2sy8pS3eCVrqDRIDgjV1bFvmD9KLvc4F3ezjZtC6cnxIjF/N8P49d5q+c3GD4wHrsjtc4mRTjhKYImptfJKXDfDYB9qP1LWkRgvh6ReJlcBEJLawKBgAW4g1NhTLM3Pe915q2e7DikTKFLKvBHnCAalD7sshipbJlx9F8/XBLL0C9zwQRR7AhUoADB8JD7sHBoapowlIMlESG1yKwnG31TQ+wjY7E1JzeQEZUnQAdrs6cseFSf12X+1al2wyCgY6swEg7FuLTP58HwHp9tga5ko4MTqNP7";
 
 
     private static String catalinCrt = "-----BEGIN CERTIFICATE-----\n" +
@@ -169,6 +174,22 @@ public class SSLClientCertificateRequest {
             "-----END CERTIFICATE-----\n";
 
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public static PrivateKey getPrivateKeyFromStr(String keystr) throws Exception {
+        // Remove the first and last lines
+//        String pubKeyPEM = keystr.replace("-----BEGIN PUBLIC KEY-----\n", "");
+//        pubKeyPEM = pubKeyPEM.replace("-----END PUBLIC KEY-----", "");
+
+        // Base64 decode the data
+        byte[] encoded = Base64.getDecoder().decode(keystr);
+        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
+        KeyFactory kf = KeyFactory.getInstance("RSA");
+        PrivateKey pubkey = kf.generatePrivate(keySpec);
+
+        return pubkey;
+    }
+
+
     static void importCertificateIntoAndroid(Certificate cert, PrivateKey privateKey) throws CertificateException, KeyStoreException {
         try {
             KeyStore pk12KeyStore = KeyStore.getInstance("PKCS12");
@@ -190,8 +211,8 @@ public class SSLClientCertificateRequest {
     }
 
 
-    static Certificate myGetCertificate() throws CertificateException, KeyStoreException {
-        InputStream is = new ByteArrayInputStream(catalinCrt.getBytes());
+    static Certificate myGetCertificate(String crtString) throws CertificateException, KeyStoreException {
+        InputStream is = new ByteArrayInputStream(crtString.getBytes());
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
         Certificate certificate = cf.generateCertificate(is);
            return certificate;
@@ -324,17 +345,19 @@ public class SSLClientCertificateRequest {
             mAlias = alias;
         }
 
-        @RequiresApi(api = Build.VERSION_CODES.M)
+        @RequiresApi(api = Build.VERSION_CODES.O)
         @Override
         protected Void doInBackground(Void... params) {
             String alias = getAlias();
             if (alias == null) return null;
 //             modific aici si caut cheia si certificatul meu
+//            aici123
             PrivateKey key = null;
             Certificate[] chain = null;
             try {
-                key = myGetKey();
-                chain =  new Certificate[]{myGetCertificate()};;
+                key = getPrivateKeyFromStr(pemKey);
+//                chain =  new Certificate[]{myGetCertificate(catalinCrt),myGetCertificate(transspedMobileCaCrt),myGetCertificate(rootCaCrt)};;
+                chain =  new Certificate[]{myGetCertificate(catalinCrt)};
             } catch (CertificateException e) {
                 e.printStackTrace();
             } catch (KeyStoreException e) {
@@ -344,6 +367,8 @@ public class SSLClientCertificateRequest {
             } catch (NoSuchAlgorithmException e) {
                 e.printStackTrace();
             } catch (InvalidAlgorithmParameterException e) {
+                e.printStackTrace();
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 
@@ -542,7 +567,7 @@ public class SSLClientCertificateRequest {
 
 //        importPrivateKey();
 
-        String clientCertificates = OauthController.getClientCertificates();
+//        String clientCertificates = OauthController.getClientCertificates();
 
         KeyChainCertSelectionCallback callback =
                 new KeyChainCertSelectionCallback(activity.getApplicationContext(),
@@ -577,20 +602,6 @@ public class SSLClientCertificateRequest {
                 showMyCustomOauthPopup(new CertSelectionFailureDialog(mActivity), new OauthOtpDialog(mActivity), mutex);
             }
         });
-//        try {
-//            mMutex.acquire();
-//        } catch (InterruptedException e) {
-//            Log.e(TAG, e.toString());
-//            e.printStackTrace();
-//        }
-
-        // poate aici123 pun popup ul meu de test// incerc sa blockez Uithread
-        // initiem proces semnare de unde primim si OTP
-//            OauthController.initSignData();
-//            CloudSignatureSingleton.getInstance().setmAuthorizationToken(OauthController.getmAccessToken());
-//            CloudSignatureSingleton.getInstance().setmCredentialId(OauthController.getmCredentialId());
-//            showMyCustomOauthPopup(new CertSelectionFailureDialog(mActivity), new OauthOtpDialog(mActivity));
-//        }
     }
 
     /**

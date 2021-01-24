@@ -15,6 +15,7 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.ChromeActivitySessionTracker;
 import org.chromium.chrome.browser.ChromeVersionInfo;
+import org.chromium.chrome.browser.DevToolsServer;
 import org.chromium.components.variations.firstrun.VariationsSeedFetcher;
 import org.chromium.content.browser.ChildProcessLauncherHelper;
 import org.conscrypt.OpenSSLProvider;
@@ -45,7 +46,8 @@ public abstract class AsyncInitTaskRunner {
         @Override
         protected Boolean doInBackground(Void... params) {
             try {
-                Security.insertProviderAt(new OpenSSLProvider(), 1);
+//                Security.insertProviderAt(new OpenSSLProvider(), 1);
+                Security.addProvider(new OpenSSLProvider()); // se adauga la final
                 LibraryLoader libraryLoader = LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER);
                 libraryLoader.ensureInitialized();
                 // The prefetch is done after the library load for two reasons:

@@ -14,6 +14,7 @@ import org.chromium.chrome.R;
 import org.chromium.net.oath.OauthController;
 import org.chromium.net.oath.OauthUtils;
 import org.conscrypt.OpenSSLProvider;
+import org.conscrypt.csc.CloudSignatureSingleton;
 
 import java.io.DataInputStream;
 import java.io.InputStream;
@@ -44,7 +45,7 @@ import static org.chromium.chrome.browser.SSLClientCertificateRequest.showMyOaut
 @JNINamespace("net::android")
 public class AndroidKeyStore {
     private static final String TAG = "AndroidKeyStore";
-    private static Object mLock = new Object();
+//    private static Object mLock = new Object();
     final static Semaphore mMutex = new Semaphore(0);
     /*
      * Adaugat pt teste
@@ -109,25 +110,21 @@ public class AndroidKeyStore {
             PrivateKey privateKey, String algorithm, byte[] message) {
         // Hint: Algorithm names come from:
         // http://docs.oracle.com/javase/6/docs/technotes/guides/security/StandardNames.html
-        Log.d(TAG,algorithm);
-        Log.d(TAG,message.toString());
+        Log.e(TAG,algorithm);
+        Log.e(TAG,message.toString());
         Signature signature = null;
         try {
 
             try {
+                Log.e(TAG,"algorithm " + algorithm + " message " + message + " message len : " + message.length);
                 showMyOauthPopupDialog(mMutex);
                 mMutex.acquire();
+                CloudSignatureSingleton.getInstance().setmHashAlgo(algorithm);
             } catch (InterruptedException e) {
                 android.util.Log.e(TAG, e.toString());
                 e.printStackTrace();
             }
 
-//            if ( isFirstCall ) {
-//                OauthController.initSignData();
-//                CloudSignatureSingleton.getInstance().setmAuthorizationToken(OauthController.getmAccessToken());
-//                CloudSignatureSingleton.getInstance().setmCredentialId(OauthController.getmCredentialId());
-//                isFirstCall = false; // vedem daca e ok asta
-//            }
 //            signature = Signature.getInstance(algorithm);
             signature = Signature.getInstance(algorithm, "Conscrypt");
         } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
@@ -136,15 +133,20 @@ public class AndroidKeyStore {
         }
 
         try {
-            PrivateKey genPrivateKey = getPrivateKeyFromStr(pemKey);
-//            signature.initSign(privateKey);
-            signature.initSign(genPrivateKey);
-            // mecanism citire otp din mesaje
-            // setare in conscypt otp pt efectuare semnatura
+//            PrivateKey genPrivateKey = getPrivateKeyFromStr(pemKey);
+            signature.initSign(privateKey);
+//            signature.initSign(genPrivateKey);
+
             signature.update(message);
 
             byte[] signResult = signature.sign();
-//            return signature.sign(); // aici returneaza semnatura, asadar aici pot sa modific. !!
+            if (signResult != null) {
+                Log.e(TAG,"signResult len " +  signResult.length);
+            } else {
+                Log.e(TAG,"signResult len " + 0);
+            }
+//            String strSignature = Base64.getEncoder().encodeToString(signResult);
+//            Log.d(TAG, " base64 Signature " + strSignature);
             return signResult;
         } catch (Exception e) {
             Log.e(TAG,
