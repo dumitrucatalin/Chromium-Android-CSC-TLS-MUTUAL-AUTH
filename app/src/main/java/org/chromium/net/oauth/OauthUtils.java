@@ -1,4 +1,4 @@
-package org.chromium.net.oath;
+package org.chromium.net.oauth;
 
 import android.content.Context;
 import android.content.SharedPreferences;

@@ -10,14 +10,9 @@ import android.support.annotation.RequiresApi;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.chrome.R;
-import org.chromium.net.oath.OauthController;
-import org.chromium.net.oath.OauthUtils;
 import org.conscrypt.OpenSSLProvider;
 import org.conscrypt.csc.CloudSignatureSingleton;
 
-import java.io.DataInputStream;
-import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.security.KeyFactory;
 import java.security.KeyPairGenerator;
@@ -25,16 +20,12 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.Provider;
-import java.security.Security;
 import java.security.Signature;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.concurrent.Semaphore;
 
-import static org.chromium.build.BuildHooksAndroid.getResources;
 import static org.chromium.chrome.browser.SSLClientCertificateRequest.showMyOauthPopupDialog;
 
 //import org.conscrypt.csc.CloudSignatureSingleton;

@@ -1,4 +1,4 @@
-package org.chromium.net.oath;
+package org.chromium.net.oauth;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -31,6 +31,8 @@ public class OauthController {
     private static final String CREDENTIAL_ID_URI = CSC_BASE_URI + "credentials/list";
     private static final String SEND_OTP_URI = CSC_BASE_URI + "credentials/sendOTP";
     private static final String CREDENTIALS_INFO_URI = CSC_BASE_URI + "credentials/info";
+    static String beginCertHeader ="-----BEGIN CERTIFICATE-----\n";
+    static String endCertHeader = "\n-----END CERTIFICATE-----\n";
 
     private String mClientId;
     private String mClientSecret;
@@ -175,6 +177,7 @@ public class OauthController {
         try {
             sendCredentialIDReq();
             getClientCertificatesReq();
+            mClientCertificates = beginCertHeader + mClientCertificates + endCertHeader;
             return  mClientCertificates;
         } catch (Exception e) {
             e.printStackTrace();
@@ -196,7 +199,7 @@ public class OauthController {
                         JSONObject jsonResponse = null;
                         jsonResponse = new JSONObject(response);
                         JSONArray attributeArray = jsonResponse.getJSONObject("cert").getJSONArray("certificates");
-                        mClientCertificates = attributeArray.get(0).toString().replaceAll("\\r\\n", ""); ; // trebuie scos /r/n
+                        mClientCertificates = attributeArray.get(0).toString().replaceAll("\\r", ""); ; // trebuie scos /r/n
                     }
                 } catch (Exception e) {
                     e.printStackTrace();

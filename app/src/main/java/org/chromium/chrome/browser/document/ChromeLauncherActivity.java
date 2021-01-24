@@ -14,7 +14,7 @@ import android.widget.Toast;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
-import org.chromium.net.oath.OauthController;
+import org.chromium.net.oauth.OauthController;
 import org.json.JSONException;
 
 import java.io.IOException;
