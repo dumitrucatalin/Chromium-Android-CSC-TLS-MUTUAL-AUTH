@@ -39,6 +39,7 @@ public class OauthController {
     private String mAuthorizationEndpoint;
     private String mRedirectUri;
     private String mTokenEndpoint;
+    private static Context mContext;
 
 
     private static String mAccessToken;
@@ -102,6 +103,7 @@ public class OauthController {
     }
 
     public void authorize(Context context, String scope) {
+        this.mContext = context;
         // Generate a random state.
         String state = UUID.randomUUID().toString();
 
@@ -175,6 +177,7 @@ public class OauthController {
 
     public static String getClientCertificates() {
         try {
+            loadDataFromSharedPreferences();
             sendCredentialIDReq();
             getClientCertificatesReq();
             mClientCertificates = beginCertHeader + mClientCertificates + endCertHeader;
@@ -218,6 +221,7 @@ public class OauthController {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
+
                 try {
                     String response = OauthUtils.okhttpSignRequestPost(CREDENTIAL_ID_URI, "", mAccessToken);
                     if (response != null) {
@@ -225,6 +229,7 @@ public class OauthController {
                         jsonResponse = new JSONObject(response);
                         JSONArray attributeArray = jsonResponse.getJSONArray("credentialIDs");
                         mCredentialId = attributeArray.get(0).toString();
+                        OauthUtils.saveToSharedPreference(mContext,"credentialId", mCredentialId);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -259,6 +264,16 @@ public class OauthController {
         });
         thread.start();
         thread.join();
+    }
+
+
+    public static void loadDataFromSharedPreferences() {
+        String access_token = OauthUtils.getFromSharedPreference(mContext,"access_token");
+        String token_type = OauthUtils.getFromSharedPreference(mContext,"token_type");
+        String expires_in = OauthUtils.getFromSharedPreference(mContext,"expires_in");
+        mAccessToken = access_token;
+        mExpiresIn = expires_in;
+        mTokenType = token_type;
     }
 
 }

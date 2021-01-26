@@ -140,6 +140,7 @@ public class AndroidKeyStore {
 //            Log.d(TAG, " base64 Signature " + strSignature);
             return signResult;
         } catch (Exception e) {
+
             Log.e(TAG,
                     "Exception while signing message with " + algorithm + " and "
                             + privateKey.getAlgorithm() + " private key ("

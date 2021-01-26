@@ -82,94 +82,6 @@ public class SSLClientCertificateRequest {
 
     private static String clientCertificate;
 
-    private static String catalinCrt = "-----BEGIN CERTIFICATE-----\n" +
-            "MIIF4jCCBMqgAwIBAgIMZ8rzcN9/6n5Qw3C5MA0GCSqGSIb3DQEBCwUAMHQxCzAJ\n" +
-            "BgNVBAYTAlJPMRcwFQYDVQQKEw5UcmFucyBTcGVkIFNSTDEfMB0GA1UECxMWRk9S\n" +
-            "IFRFU1QgUFVSUE9TRVMgT05MWTErMCkGA1UEAxMiVHJhbnMgU3BlZCBNb2JpbGUg\n" +
-            "ZUlEQVMgUUNBIC0gVEVTVDAeFw0yMDExMTMxMjUzNTJaFw0yMzExMTQxMjUzNTJa\n" +
-            "MIGWMQswCQYDVQQGEwJSTzEQMA4GA1UEBBMHRFVNSVRSVTEWMBQGA1UEKhMNSU9O\n" +
-            "VVQtQ0FUQUxJTjE9MDsGA1UEBRM0MjAwNDEyMjM0REkwMjAxOEU3RDA2MDFEQTJF\n" +
-            "OTRBRDBBM0VDMThDOTE1REM3Q0MzQzFFRDEeMBwGA1UEAxMVSU9OVVQtQ0FUQUxJ\n" +
-            "TiBEVU1JVFJVMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzr/zQjjy\n" +
-            "S7ljqtOhfIRrXEjIDkDnICJx6Gk7cJwJX4Yj5CtCbjM6/HdTP9Fg0s02/q1spFOh\n" +
-            "I1fmVzwBpZ99B6iDUu6mEEQzqJBEmb5/UTFuVcXmcu+7/qZ92m7l07L2HbcVeou9\n" +
-            "RlCWsPuoPXdfzOn3kwePjjXXr7n8cpUSuNUQpVPDSouRpEjlnEH8uR3tFws5ikIt\n" +
-            "1x2tRFslbxmEHSqM2ioA96qn+y9TBsnWf3Moy3xIRVlOmP+LK3801LslBWTPo32q\n" +
-            "+Jc+sfSS1dLm7jSm3HoY/8+vveax8kBZMQq4hdpmhnueWugwhYZY6Cf38V808HIL\n" +
-            "vYSPRfRbutaB6wIDAQABo4ICTzCCAkswgYQGCCsGAQUFBwEBBHgwdjBIBggrBgEF\n" +
-            "BQcwAoY8aHR0cDovL3d3dy50cmFuc3NwZWQucm8vY2FjZXJ0cy90c19tb2JpbGVf\n" +
-            "ZWlkYXNfcWNhX3Rlc3QucDdjMCoGCCsGAQUFBzABhh5odHRwOi8vb2NzcC10ZXN0\n" +
-            "LnRyYW5zc3BlZC5yby8wHQYDVR0OBBYEFNiLbxI2WjtiBxJUE+ggZwrC0gTbMAwG\n" +
-            "A1UdEwEB/wQCMAAwHwYDVR0jBBgwFoAUCvGAR+TEUYHUKozGlW3pi3O1BMwwewYI\n" +
-            "KwYBBQUHAQMEbzBtMAgGBgQAjkYBATALBgYEAI5GAQMCAQswCAYGBACORgEEMBMG\n" +
-            "BgQAjkYBBjAJBgcEAI5GAQYBMDUGBgQAjkYBBTArMCkWI2h0dHBzOi8vd3d3LnRy\n" +
-            "YW5zc3BlZC5yby9yZXBvc2l0b3J5EwJlbjBVBgNVHSAETjBMMD8GCysGAQQBgrgd\n" +
-            "BAEBMDAwLgYIKwYBBQUHAgEWImh0dHA6Ly93d3cudHJhbnNzcGVkLnJvL3JlcG9z\n" +
-            "aXRvcnkwCQYHBACL7EABAjBJBgNVHR8EQjBAMD6gPKA6hjhodHRwOi8vd3d3LnRy\n" +
-            "YW5zc3BlZC5yby9jcmwvdHNfbW9iaWxlX2VpZGFzX3FjYV90ZXN0LmNybDAOBgNV\n" +
-            "HQ8BAf8EBAMCBsAwHQYDVR0lBBYwFAYIKwYBBQUHAwIGCCsGAQUFBwMEMCYGA1Ud\n" +
-            "EQQfMB2BG2R1bWl0cnUuY2F0YWxpbjk2QHlhaG9vLmNvbTANBgkqhkiG9w0BAQsF\n" +
-            "AAOCAQEAYcja0dEG1deq6jv3wmidhcCWraIq6lB4e5MFcX1oRoFVKqAB38p3zcH/\n" +
-            "Y8Qm3TNfGgS6ei36CKh8mLEMZ7RR08FUOV4QHOKIhud5N8Yu8g746pOabfHWqydN\n" +
-            "ZiaY8Fweq8Dx77pKdl+QZSPxnZIY0KDEQM9yeftaAx3F48FbWUWikmE9lnw0kX88\n" +
-            "t18MkTnZ3Dlgh8ox9sRdtp3vMINgLDRSNzFKCBfgTi+CNYskym83+QvEH0oH4e+a\n" +
-            "Yr9LhVXwu/t4GdP8X5UaG9u7Ne5VGwrPoTtyDVEiRKIrcN0cIqD9+1+lPfCQWZ3a\n" +
-            "nfYIj6bXB3AP0S83iBRMXWN59O2W/w==\n" +
-            "-----END CERTIFICATE-----\n";
-
-    private static String transspedMobileCaCrt = "-----BEGIN CERTIFICATE-----\n" +
-            "MIIE5jCCA86gAwIBAgIKS7HdUQAAAAAACzANBgkqhkiG9w0BAQsFADBuMQswCQYD\n" +
-            "VQQGEwJSTzEXMBUGA1UEChMOVHJhbnMgU3BlZCBTUkwxHzAdBgNVBAsTFkZPUiBU\n" +
-            "RVNUIFBVUlBPU0VTIE9OTFkxJTAjBgNVBAMTHFRyYW5zIFNwZWQgUm9vdCBDQSBH\n" +
-            "MiAtIFRFU1QwHhcNMTcwMTEyMTMzMTM2WhcNMjcwMTEyMTM0MTM2WjB0MQswCQYD\n" +
-            "VQQGEwJSTzEXMBUGA1UEChMOVHJhbnMgU3BlZCBTUkwxHzAdBgNVBAsTFkZPUiBU\n" +
-            "RVNUIFBVUlBPU0VTIE9OTFkxKzApBgNVBAMTIlRyYW5zIFNwZWQgTW9iaWxlIGVJ\n" +
-            "REFTIFFDQSAtIFRFU1QwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDf\n" +
-            "DHu8uwd7qGWeC9UF2bS+tDCvQfsdO23HUikPVPbDIUClYgItXEv/t8SBjTCZUZPV\n" +
-            "lnxIPFj3o/gXYwDq3ggpAOP1fREtWv7m83aOLT6xaFFzotzBRTEqKLSj5nFQWxq9\n" +
-            "Emd4v8jce3IRuKi16U9MCwuH2FcoODrZ4WHlLuD25/6wE8oPBqIYt5llZqRaIur5\n" +
-            "ZhU+Cq1Hd40k/bchWslVjzFxZQIhq9AIu63I0VlZtMjpQUIhxEfzbSBNBD5Cm6Ef\n" +
-            "cmnnY9xN32/ikr5hUM86BXwEKXfMbgqLBc0cSkA/b12j8UTKUvYj1MTPdVom3YVQ\n" +
-            "RlelrNzgbYeX60kRGJHlAgMBAAGjggF+MIIBejAdBgNVHQ4EFgQUCvGAR+TEUYHU\n" +
-            "KozGlW3pi3O1BMwwHwYDVR0jBBgwFoAUmPw5ghFgEoJOtTkJGVsdtp0WGckwQAYD\n" +
-            "VR0fBDkwNzA1oDOgMYYvaHR0cDovL3d3dy50cmFuc3NwZWQucm8vY3JsL3RzX3Jv\n" +
-            "b3RfZzJfdGVzdC5jcmwwewYIKwYBBQUHAQEEbzBtMD8GCCsGAQUFBzAChjNodHRw\n" +
-            "Oi8vd3d3LnRyYW5zc3BlZC5yby9jYWNlcnRzL3RzX3Jvb3RfZzJfdGVzdC5jcnQw\n" +
-            "KgYIKwYBBQUHMAGGHmh0dHA6Ly9vY3NwLXRlc3QudHJhbnNzcGVkLnJvLzBVBgNV\n" +
-            "HSAETjBMMAkGBwQAi+xAAQIwPwYLKwYBBAGCuB0EAQEwMDAuBggrBgEFBQcCARYi\n" +
-            "aHR0cDovL3d3dy50cmFuc3NwZWQucm8vcmVwb3NpdG9yeTASBgNVHRMBAf8ECDAG\n" +
-            "AQH/AgEAMA4GA1UdDwEB/wQEAwIBBjANBgkqhkiG9w0BAQsFAAOCAQEAd4VtoRcG\n" +
-            "Q5hTjQiDTlhpTFLvjMuQgSkfYk1hKwHXPlGhkitL6J94fZ7a5eKne32kBAI900ps\n" +
-            "wAKWJu376rtxXxaMt2yCabJc+04eY4TphjDFfVFo5YJzlsBsFoFHMMapcBz9L5ii\n" +
-            "mro/CHkTazv6qqupK46XwR3OUImiOpLEbxJv/ohCi5LnQPxZUjeMR74pLrQwESWn\n" +
-            "mDj5qI3WF/jZQJySvxF/fD8Y+y5eBKMwZcPMO9F54RzsjkAePlAslXEDfyL/NTSW\n" +
-            "UpPicMv3hyWtf622weH8PRnrRK4JqDaj4adEcKeThnXw5Ct2/uHpgF0kYZcTpeWy\n" +
-            "McSbUFjhJlWEgw==\n" +
-            "-----END CERTIFICATE-----\n";
-
-    private static String rootCaCrt = "-----BEGIN CERTIFICATE-----\n" +
-            "MIIDqDCCApCgAwIBAgIQK2bbwnU3ML1CIz5RvN1ByjANBgkqhkiG9w0BAQsFADBu\n" +
-            "MQswCQYDVQQGEwJSTzEXMBUGA1UEChMOVHJhbnMgU3BlZCBTUkwxHzAdBgNVBAsT\n" +
-            "FkZPUiBURVNUIFBVUlBPU0VTIE9OTFkxJTAjBgNVBAMTHFRyYW5zIFNwZWQgUm9v\n" +
-            "dCBDQSBHMiAtIFRFU1QwHhcNMTYxMjAyMTMxNjQ4WhcNMzExMjAyMTMyNjQ3WjBu\n" +
-            "MQswCQYDVQQGEwJSTzEXMBUGA1UEChMOVHJhbnMgU3BlZCBTUkwxHzAdBgNVBAsT\n" +
-            "FkZPUiBURVNUIFBVUlBPU0VTIE9OTFkxJTAjBgNVBAMTHFRyYW5zIFNwZWQgUm9v\n" +
-            "dCBDQSBHMiAtIFRFU1QwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC7\n" +
-            "z3iVoaZf3nuiX+cw9O86dkBPtHgkS/W2a09xKTd2WXx++tD4Ci2425IWuhUy1O5i\n" +
-            "jQoVPfCVha8DCAbmT7ElBpPzY71HitYuMZMk2u12oJqHZmbrStlOwcTW/uKYb3/1\n" +
-            "tK6E1cAh9Ux482sXEhkeSM6nhZKe5MBrSTx+jZOYcxWhXPenxI3oqwivWH2BBqrx\n" +
-            "A3muct5ZeOh9UM3oJG4vhyst1tNbgT6cKfHpSVhMuNoiY4IrjkEJGcm/R5+oC7TA\n" +
-            "KpTqoDaobkVakxJkcgHMn04vzv5ZUQuP+v7t2XuRjSJO7eBIue7+m4RMbYiVsUbi\n" +
-            "tXGvBL22oQDrdFlmAHVlAgMBAAGjQjBAMA4GA1UdDwEB/wQEAwIBBjAPBgNVHRMB\n" +
-            "Af8EBTADAQH/MB0GA1UdDgQWBBSY/DmCEWASgk61OQkZWx22nRYZyTANBgkqhkiG\n" +
-            "9w0BAQsFAAOCAQEAqJBXU5l21vZbc8B2v2jMYiSsQFn2L/iLNw4dPEnlwUORHREq\n" +
-            "vv4cVwlNyBJG4PQTWSqVzfbS4KaDOMfO2eiq2HI4QJ/v9VnKre5uwgCNhSj5fGIo\n" +
-            "3SaTljKw7/gtjorRTOJfZPd6F0YLXkLKvah+ZScjMqjB9szWqIhcbiuBJBoi5vXB\n" +
-            "XSalZk9ZbEpYkriyQ1iBJtvYs6WbZErGibMzwWAD+YXYrDKI2e95UC84bJloHPCW\n" +
-            "du3LeH+LbqqVmssr3jTQfSUHIfiqGRjPTeP2rMnt2aaXTmx3G4iS7DaNxdrsQhCc\n" +
-            "xM/c9DuEWrcQVuPrsrTRLeOV4gUPlw5wk/duJg==\n" +
-            "-----END CERTIFICATE-----\n";
-
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public static PrivateKey getPrivateKeyFromStr(String keystr) throws Exception {
@@ -182,29 +94,7 @@ public class SSLClientCertificateRequest {
         PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
         KeyFactory kf = KeyFactory.getInstance("RSA");
         PrivateKey pubkey = kf.generatePrivate(keySpec);
-
         return pubkey;
-    }
-
-
-    static void importCertificateIntoAndroid(Certificate cert, PrivateKey privateKey) throws CertificateException, KeyStoreException {
-        try {
-            KeyStore pk12KeyStore = KeyStore.getInstance("PKCS12");
-            pk12KeyStore.load(null, null);
-//            ByteArrayInputStream is = new ByteArrayInputStream(certStr.getBytes());
-//            CertificateFactory cf = CertificateFactory.getInstance("X.509");
-//            Certificate cert = cf.generateCertificate(is);
-            pk12KeyStore.setKeyEntry("CataDCertPfx", privateKey, "".toCharArray(), new Certificate[]{cert});
-            ByteArrayOutputStream os = new ByteArrayOutputStream();
-            pk12KeyStore.store(os, "".toCharArray());
-            Intent certInstallIntent = KeyChain.createInstallIntent();
-            certInstallIntent.putExtra(KeyChain.EXTRA_PKCS12, String.valueOf(os));
-            certInstallIntent.putExtra(KeyChain.EXTRA_KEY_ALIAS, "CataDCertPfx");
-            certInstallIntent.putExtra(KeyChain.EXTRA_NAME, "CataDCertPfx");
-            mActivity.startActivity(certInstallIntent);
-        } catch (Exception e) {
-            Log.d(TAG, "help");
-        }
     }
 
 
@@ -216,8 +106,9 @@ public class SSLClientCertificateRequest {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
-    static PrivateKey myGetKey() throws CertificateException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, InvalidAlgorithmParameterException {
+    static PrivateKey myGetKey() throws  NoSuchProviderException, NoSuchAlgorithmException {
         KeyPairGenerator kpg = KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_RSA,"Conscrypt");
+
 //        kpg.initialize(new KeyGenParameterSpec.Builder(
 //                "UserKeyAlias",
 //                KeyProperties.PURPOSE_SIGN | KeyProperties.PURPOSE_VERIFY)
@@ -226,86 +117,7 @@ public class SSLClientCertificateRequest {
 //                .build());
 
         KeyPair kp = kpg.generateKeyPair();
-
         return kp.getPrivate();
-    }
-
-
-    @RequiresApi(api = Build.VERSION_CODES.M)
-    protected static void importPrivateKey() {
-        try {
-//            KeyStore keystore = KeyStore.getInstance("AndroidKeyStore");
-//            KeyStore keystore = KeyStore.getInstance("AndroidCAStore");
-//            KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-            KeyStore keystore = KeyStore.getInstance("PKCS12");
-            keystore.load(null);
-
-
-            Enumeration<String> aliases = keystore.aliases();
-
-            CertificateFactory cf = CertificateFactory.getInstance("X.509");
-
-            InputStream is = new ByteArrayInputStream(catalinCrt.getBytes());
-            Certificate certificate = cf.generateCertificate(is);
-
-            is = new ByteArrayInputStream(transspedMobileCaCrt.getBytes());
-
-            Certificate caCert = cf.generateCertificate(is);
-
-            is = new ByteArrayInputStream(transspedMobileCaCrt.getBytes());
-            Certificate rootCaCrt = cf.generateCertificate(is);
-
-            Certificate[] chain = new Certificate[3];
-            chain[0] = certificate;
-            chain[1] = caCert;
-            chain[2] = rootCaCrt;
-
-//            KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
-//            kpg.initialize(2048);
-//            KeyPairGenerator kpg = KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_RSA);
-
-//            RSAKeyGenParameterSpec spec = new RSAKeyGenParameterSpec(2048, RSAKeyGenParameterSpec.F4);
-
-            KeyPairGenerator kpg = KeyPairGenerator.getInstance(
-                    KeyProperties.KEY_ALGORITHM_RSA, "AndroidKeyStore");
-            kpg.initialize(new KeyGenParameterSpec.Builder(
-                    "CataDCertPfx",
-                    KeyProperties.PURPOSE_SIGN | KeyProperties.PURPOSE_VERIFY)
-                    .setDigests(KeyProperties.DIGEST_SHA256,
-                            KeyProperties.DIGEST_SHA512)
-                    .build());
-
-            KeyPair kp = kpg.generateKeyPair();
-
-
-//            kpg.initialize(spec);
-//            KeyPair keyPair = kpg.genKeyPair();
-//            PrivateKey prvKey = keyPair.getPrivate();
-
-            PrivateKey prvKey = kp.getPrivate();
-
-//            keystore.setKeyEntry("catalinCert3", prvKey, null, chain);
-//            keystore.setCertificateEntry("catalinCert3", certificate );
-
-            importCertificateIntoAndroid(certificate, prvKey);
-            Enumeration<String> aliases2 = keystore.aliases();
-
-            Log.d(TAG, aliases.toString());
-
-        } catch (java.security.cert.CertificateException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (KeyStoreException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
     }
 
 
@@ -348,8 +160,6 @@ public class SSLClientCertificateRequest {
             Certificate[] chain = null;
             try {
                 key = myGetKey();  // o cheie noua la fiecare request
-//                chain =  new Certificate[]{myGetCertificate(catalinCrt),myGetCertificate(transspedMobileCaCrt),myGetCertificate(rootCaCrt)};;
-//                chain =  new Certificate[]{myGetCertificate(catalinCrt)};
                 chain = new Certificate[]{myGetCertificate(clientCertificate)};
             } catch (CertificateException e) {
                 e.printStackTrace();
@@ -358,8 +168,6 @@ public class SSLClientCertificateRequest {
             } catch (NoSuchProviderException e) {
                 e.printStackTrace();
             } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
-            } catch (InvalidAlgorithmParameterException e) {
                 e.printStackTrace();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -532,7 +340,7 @@ public class SSLClientCertificateRequest {
     @CalledByNative
     private static boolean selectClientCertificate(final long nativePtr, final WindowAndroid window,
                                                    final String[] keyTypes, byte[][] encodedPrincipals, final String hostName,
-                                                   final int port) {
+                                                   final int port) throws CertificateException, KeyStoreException {
         ThreadUtils.assertOnUiThread();
 
         final Activity activity = window.getActivity().get();
@@ -562,21 +370,27 @@ public class SSLClientCertificateRequest {
 
         clientCertificate = OauthController.getClientCertificates();
 
+        Certificate clientCrt = myGetCertificate(clientCertificate);
+
         KeyChainCertSelectionCallback callback =
                 new KeyChainCertSelectionCallback(activity.getApplicationContext(),
                         nativePtr);
+
+        callback.alias("myAlias");
+
 //        KeyChainCertSelectionWrapper keyChain = new KeyChainCertSelectionWrapper(activity,
 //                callback, keyTypes, principals, hostName, port, null);
-
-        KeyChainCertSelectionWrapper keyChain = new KeyChainCertSelectionWrapper(activity,
-                callback, keyTypes, principals, hostName, port, "catalinCert");
 
 //        showMyCustomOauthPopup(new CertSelectionFailureDialog(activity), new OauthOtpDialog(activity));
 
         // comentat si accesat din myCustomOauthPopup
         // pot verifica keyChain si in cazul in care nu e certificat de pe server, sa il las sa isi ia cursul normal
-        maybeShowCertSelection(keyChain, callback,
-                new CertSelectionFailureDialog(activity));
+
+
+//        maybeShowCertSelection(keyChain, callback,
+//                new CertSelectionFailureDialog(activity));
+
+
         // We've taken ownership of the native ssl request object.
         return true;
     }

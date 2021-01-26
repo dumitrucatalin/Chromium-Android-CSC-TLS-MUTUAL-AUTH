@@ -48,7 +48,7 @@ public class ChromeLauncherActivity extends Activity {
                     try {
                         handleAuthCallback(data);
                         mAuthCode = data.toString();
-                        Toast.makeText(this, "E OK", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, "Auth token stored", Toast.LENGTH_LONG).show();
                     } catch (Exception e) {
                         Toast.makeText(this, e.toString(), Toast.LENGTH_LONG).show();
                         e.printStackTrace();
