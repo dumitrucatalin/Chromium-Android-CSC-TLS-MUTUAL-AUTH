@@ -9,36 +9,45 @@ import android.support.annotation.NonNull;
 import android.support.customtabs.CustomTabsIntent;
 import android.util.Log;
 
+import org.chromium.chrome.R;
+import org.chromium.ui.widget.Toast;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.util.UUID;
+
+import org.conscrypt.csc.CloudSignatureSingleton;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
 public class OauthController {
-    private static final String CSC_BASE_URI = "https://msign-test.transsped.ro/csc/v0/";
-    private static final String AUTHORIZATION_ENDPOINT = CSC_BASE_URI + "oauth2/authorize";
-    private static final String TOKEN_URL_ENDPOINT = CSC_BASE_URI + "oauth2/token";
-    private static final String CLIENT_ID = "msdiverse";
-    private static final String CLIENT_SECRET = "8KKhHnjKdYmAakc8";
-    private static final String BASE_REDIRECT_URI = "com.csc.tls.auth";
-    private static final String REDIRECT_URI = BASE_REDIRECT_URI +"://token";
-    private static final String HASH_DATA_TO_SIGN = "o7WsDDAtnLKgrh77/2HGCZU9Y0ZtasYmCd0DBEioNgc=";
+    // these needed to be configured  with user credentials and redirect uri from remote_signing_json_config file
+    private static  String BASE_REDIRECT_URI;
+    private static  String CSC_BASE_URI;
+    private static  String CLIENT_OAUTH_PIN ;
+
+    private static  String CREDENTIAL_ID_URI ;
+    private static  String SEND_OTP_URI;
+    private static  String CREDENTIALS_INFO_URI ;
     private static final String TAG = "OauthController";
-    private static final String CREDENTIAL_ID_URI = CSC_BASE_URI + "credentials/list";
-    private static final String SEND_OTP_URI = CSC_BASE_URI + "credentials/sendOTP";
-    private static final String CREDENTIALS_INFO_URI = CSC_BASE_URI + "credentials/info";
-    static String beginCertHeader ="-----BEGIN CERTIFICATE-----\n";
+
+    static String beginCertHeader = "-----BEGIN CERTIFICATE-----\n";
     static String endCertHeader = "\n-----END CERTIFICATE-----\n";
 
-    private String mClientId;
-    private String mClientSecret;
-    private String mAuthorizationEndpoint;
-    private String mRedirectUri;
-    private String mTokenEndpoint;
+    private static String mClientId;
+    private static String mClientSecret;
+    private static String mAuthorizationEndpoint;
+    private static String mRedirectUri;
+    private static String mTokenEndpoint;
     private static Context mContext;
 
 
@@ -86,24 +95,22 @@ public class OauthController {
     }
 
     public OauthController(String clientId, String clientSecret, String authorizationEndpoint,
-                        String redirectUri, String tokenUrl) {
+                           String redirectUri, String tokenUrl) {
         mClientId = clientId;
         mClientSecret = clientSecret;
         mAuthorizationEndpoint = authorizationEndpoint;
         mRedirectUri = redirectUri;
         mTokenEndpoint = tokenUrl;
+        setParamsToConscyptProvider();
     }
 
-    public OauthController() {
-        mClientId = CLIENT_ID;
-        mClientSecret = CLIENT_SECRET;
-        mAuthorizationEndpoint = AUTHORIZATION_ENDPOINT;
-        mRedirectUri = REDIRECT_URI;
-        mTokenEndpoint = TOKEN_URL_ENDPOINT;
+    public OauthController()  {
+
     }
 
-    public void authorize(Context context, String scope) {
+    public void authorize(Context context, String scope) throws IOException {
         this.mContext = context;
+        getParamsFromConfigJson();
         // Generate a random state.
         String state = UUID.randomUUID().toString();
 
@@ -113,6 +120,11 @@ public class OauthController {
         preferences.edit()
                 .putString("OAUTH_STATE", state)
                 .apply();
+
+        if(mAuthorizationEndpoint == null || mClientId==null || mRedirectUri==null) {
+            Toast.makeText(context, "One or more client parameters null", android.widget.Toast.LENGTH_LONG).show();
+            return;
+        }
 
         // Create an authorization URI to the OAuth Endpoint.
         Uri uri = Uri.parse(mAuthorizationEndpoint)
@@ -130,7 +142,7 @@ public class OauthController {
         customTabsIntent.launchUrl(context, uri);
     }
 
-    // aici iau doar codul, numai pe asta il am... si urmeaza sa fac requesturi pt restul
+    // aici iau doar codul si urmeaza sa fac requesturi pt restul
     public void handleAuthCallback(
             @NonNull Context context, @NonNull Uri uri, @NonNull OAuthCallback callback) throws IOException, JSONException {
         String code = uri.getQueryParameter("code");
@@ -149,9 +161,9 @@ public class OauthController {
                 mTokenType = jsonResponse.getString("token_type");
                 mExpiresIn = jsonResponse.getString("expires_in");
 
-                OauthUtils.saveToSharedPreference(context,"access_token", mAccessToken);
-                OauthUtils.saveToSharedPreference(context,"token_type", mTokenType);
-                OauthUtils.saveToSharedPreference(context,"expires_in", mExpiresIn);
+                OauthUtils.saveToSharedPreference(context, "access_token", mAccessToken);
+                OauthUtils.saveToSharedPreference(context, "token_type", mTokenType);
+                OauthUtils.saveToSharedPreference(context, "expires_in", mExpiresIn);
 
                 // aici le pun in shared preferences sau fac o clasa token de unde sa iau pt requesturi de semnatura
                 new Handler(Looper.getMainLooper()).post(
@@ -163,15 +175,19 @@ public class OauthController {
         }).start();
     }
 
-    public static void initSignData() {
+    public static Boolean initSignData() {
         try {
             sendCredentialIDReq();
             sendOTPReq();
+            if (mCredentialId == null) {
+                return false;
+            }
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
             Log.e(TAG, e.toString());
         }
-
+        return false;
     }
 
 
@@ -180,8 +196,11 @@ public class OauthController {
             loadDataFromSharedPreferences();
             sendCredentialIDReq();
             getClientCertificatesReq();
+            if (mClientCertificates == null) {
+                return null;
+            }
             mClientCertificates = beginCertHeader + mClientCertificates + endCertHeader;
-            return  mClientCertificates;
+            return mClientCertificates;
         } catch (Exception e) {
             e.printStackTrace();
             Log.e(TAG, e.toString());
@@ -202,7 +221,8 @@ public class OauthController {
                         JSONObject jsonResponse = null;
                         jsonResponse = new JSONObject(response);
                         JSONArray attributeArray = jsonResponse.getJSONObject("cert").getJSONArray("certificates");
-                        mClientCertificates = attributeArray.get(0).toString().replaceAll("\\r", ""); ; // trebuie scos /r/n
+                        mClientCertificates = attributeArray.get(0).toString().replaceAll("\\r", "");
+                        ; // trebuie scos /r/n
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -229,7 +249,7 @@ public class OauthController {
                         jsonResponse = new JSONObject(response);
                         JSONArray attributeArray = jsonResponse.getJSONArray("credentialIDs");
                         mCredentialId = attributeArray.get(0).toString();
-                        OauthUtils.saveToSharedPreference(mContext,"credentialId", mCredentialId);
+                        OauthUtils.saveToSharedPreference(mContext, "credentialId", mCredentialId);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -268,12 +288,56 @@ public class OauthController {
 
 
     public static void loadDataFromSharedPreferences() {
-        String access_token = OauthUtils.getFromSharedPreference(mContext,"access_token");
-        String token_type = OauthUtils.getFromSharedPreference(mContext,"token_type");
-        String expires_in = OauthUtils.getFromSharedPreference(mContext,"expires_in");
+        String access_token = OauthUtils.getFromSharedPreference(mContext, "access_token");
+        String token_type = OauthUtils.getFromSharedPreference(mContext, "token_type");
+        String expires_in = OauthUtils.getFromSharedPreference(mContext, "expires_in");
         mAccessToken = access_token;
         mExpiresIn = expires_in;
         mTokenType = token_type;
+    }
+
+    public static void setParamsToConscyptProvider() {
+        CloudSignatureSingleton.getInstance().setmPIN(CLIENT_OAUTH_PIN);
+        CloudSignatureSingleton.getInstance().setmCSC_BASE_URI(CSC_BASE_URI);
+    }
+
+    public static void getParamsFromConfigJson() throws IOException {
+        InputStream is = mContext.getResources().openRawResource(R.raw.remote_signing_json_config);
+        Writer writer = new StringWriter();
+        char[] buffer = new char[1024];
+        try {
+            Reader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+            int n;
+            while ((n = reader.read(buffer)) != -1) {
+                writer.write(buffer, 0, n);
+            }
+            String jsonString = writer.toString();
+
+            JSONObject jsonResponse = new JSONObject(jsonString);
+             mClientId = jsonResponse.getString("CLIENT_ID");
+             mClientSecret = jsonResponse.getString("CLIENT_SECRET");
+             CLIENT_OAUTH_PIN = jsonResponse.getString("CLIENT_OAUTH_PIN");
+             BASE_REDIRECT_URI = jsonResponse.getString("BASE_REDIRECT_URI");
+             CSC_BASE_URI = jsonResponse.getString("CSC_BASE_URI");
+
+             if(mClientId == null || mClientSecret == null || CLIENT_OAUTH_PIN == null || BASE_REDIRECT_URI == null || CSC_BASE_URI == null) {
+                 Toast.makeText(mContext, "Error on remote signing json config params!!", Toast.LENGTH_LONG).show();
+             }
+
+            mAuthorizationEndpoint = CSC_BASE_URI + "oauth2/authorize";
+            mTokenEndpoint = CSC_BASE_URI + "oauth2/token";
+            mRedirectUri = BASE_REDIRECT_URI + "://token";
+            CREDENTIAL_ID_URI = CSC_BASE_URI + "credentials/list";
+            SEND_OTP_URI = CSC_BASE_URI + "credentials/sendOTP";
+            CREDENTIALS_INFO_URI = CSC_BASE_URI + "credentials/info";
+
+            setParamsToConscyptProvider();
+
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
+        } finally {
+            is.close();
+        }
     }
 
 }

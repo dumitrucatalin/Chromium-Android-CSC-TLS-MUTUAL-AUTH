@@ -27,11 +27,12 @@ public class ChromeLauncherActivity extends Activity {
 
     private static final String BASE_REDIRECT_URI = "com.csc.tls.auth";
     private static String mAuthCode;
-    private static final OauthController mOauthController = new OauthController();
+    private static  OauthController mOauthController = new OauthController();
     private static Boolean isFirstRun = true;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+
         // Third-party code adds disk access to Activity.onCreate. http://crbug.com/619824
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         TraceEvent.begin("ChromeLauncherActivity.onCreate");
@@ -76,10 +77,15 @@ public class ChromeLauncherActivity extends Activity {
             StrictMode.setThreadPolicy(oldPolicy);
             TraceEvent.end("ChromeLauncherActivity.onCreate");
 
-            if (isFirstRun) {
-                mOauthController.authorize(getApplicationContext(), "user");
-                isFirstRun = false;
+            try {
+                if (isFirstRun) {
+                    mOauthController.authorize(getApplicationContext(), "user");
+                    isFirstRun = false;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+
         }
     }
 

@@ -7,28 +7,28 @@ package org.chromium.net;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 
+
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.conscrypt.OpenSSLProvider;
+
+import org.chromium.chrome.R;
+import org.chromium.ui.widget.Toast;
 import org.conscrypt.csc.CloudSignatureSingleton;
 
 import java.lang.reflect.Method;
-import java.security.KeyFactory;
-import java.security.KeyPairGenerator;
+
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
-import java.security.Provider;
+
 import java.security.Signature;
 import java.security.interfaces.RSAPrivateKey;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.Base64;
+
 import java.util.concurrent.Semaphore;
 
 import static org.chromium.chrome.browser.SSLClientCertificateRequest.showMyOauthPopupDialog;
 
-//import org.conscrypt.csc.CloudSignatureSingleton;
 
 /**
  * Specifies all the dependencies from the native OpenSSL engine on an Android KeyStore.
@@ -36,53 +36,7 @@ import static org.chromium.chrome.browser.SSLClientCertificateRequest.showMyOaut
 @JNINamespace("net::android")
 public class AndroidKeyStore {
     private static final String TAG = "AndroidKeyStore";
-//    private static Object mLock = new Object();
     final static Semaphore mMutex = new Semaphore(0);
-    /*
-     * Adaugat pt teste
-     * */
-    private static Boolean isFirstCall = true;
-    private static String pemKey = "MIIEowIBAAKCAQEAzvE2cCa/Y2UwylljgVZIS8uc0c9GsFEp+vhd8ZZ9yo79n/SdI27MOgfKLAMZS3zTGZDvY8d/Yu4kLeEMrJKnHtPGXnBL/Rmyi9uMu/Z2mTsAM//KiCAp/QAIv0JETMIce5VtytXbc1MFpEa2R4iFsH8cZvTDZfYrXndXD/yaOGEVXCb67ffxnCcC9xsH+Y8U4BTyVLPw20VFdD4HiyidpPjiBG4CsJWew0y8GrAImWR8QKWv9AiIaoFSUOQsBwUkj8HDJI4MQo0HbdlhGS741cGhzbvcgup/dREm8I7WFF5lUWOhY91aJ8C6mnWVNCIi0unf1E7f9agFH7nBAlnEhwIDAQABAoIBAC4fpyGCEWBG+oPvPnViVMTIAhDlYP0FahTs7ItfHnRaQH85VxjBpjU87Tu4CRhBHw/wtNqJaYQUTe4H3fpMyYDedLUx1E36P0hay9hNC4wFkXsFhQ+oE5O3QTvXuj9deFm3KXxvA/WFSJmfxRrWe+2ltx/fZ/m+z1XDxZzjkUAFRESNjRB7TrPH7w435KRQEc1ouBf65LcEXDD5xBpiEKeBnk3QHVB1+CZb9GlESSBrjtcvu57E1S5KPUCJPD/PsQphME5OxkujS8pjtHDWDlq/KKzKmBo17k88Iadpc9po7eWt8r+LUTmd4GPfYRhq2k1zc03e8qPaDjYzCuRv1cECgYEA/10k3ioi2P3YAaMCYGECFuFv8U6aXsKMrYX3MW7HtxdctevU0fMRlVfLz2Jc3oOS9aHY+Frm+bkKQ2Hq2xdQlByfF5/lyq8BNaA/cy4iPyYoPMUWmnYnWT4BlrO1/4keXmuzl8dUiSeJUUcbqu6nDRTr76JxWVRfDHtVG5C9BGECgYEAz3UwLU8NGwSUCtelbLkVckUxx8EwQSVxikE1sdjmrLmzRk6kCWJ7R9vXqgNFS2gyCT6yB1l4Is1OaAnwB/4zQtyRH5VJsZOokmrsDvZhVjZzmf9sFy9gEQp8HtYA5cJAAQhtNDnGcPpX8HRJTRprs7/1jDRHjF1OwPDIqiZccecCgYEAoXxhqCy1RMuiIcbX5eLy001U4SB39pzJIaKqI5SOr3YSpuiv+OThpbOTq13kpMJH2RW0g7nYfutJVjtBrbMcvc0rvmDbjEUHWsYv2cK+3Xhf0a5BEQTO9VyE3Kxg12v6zHMHa2AeUW2zJLb3BC1PbrJgUXZEf90fDmGf/IKXRYECgYBBaKpq7qysIxJmJL20fNqFL8nVOFT1hU+6DntWepOoS9h5R1wy1UkXS/pAUU2sy8pS3eCVrqDRIDgjV1bFvmD9KLvc4F3ezjZtC6cnxIjF/N8P49d5q+c3GD4wHrsjtc4mRTjhKYImptfJKXDfDYB9qP1LWkRgvh6ReJlcBEJLawKBgAW4g1NhTLM3Pe915q2e7DikTKFLKvBHnCAalD7sshipbJlx9F8/XBLL0C9zwQRR7AhUoADB8JD7sHBoapowlIMlESG1yKwnG31TQ+wjY7E1JzeQEZUnQAdrs6cseFSf12X+1al2wyCgY6swEg7FuLTP58HwHp9tga5ko4MTqNP7";
-
-    private static boolean isOurProvider(Provider p) {
-        return p.getClass().getPackage().equals(OpenSSLProvider.class.getPackage());
-    }
-
-//    private static Provider getOpensslProvider(String algorithm) {
-//        ArrayList<Provider> providers = new ArrayList<>(1);
-//        for (Provider p : Security.getProviders()) {
-//            if (!isOurProvider(p)) {
-//                return p;
-////                providers.add(p);
-//            }
-//        }
-//        if (providers.isEmpty()) {
-//            System.err.println("Could not find external provider for algorithm: " + algorithm);
-//        }
-////        return providers;
-//        return  null;
-//    }
-
-    private static PrivateKey generateRsaKeys() throws NoSuchAlgorithmException, NoSuchProviderException {
-        KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
-        keyGen.initialize(2048);
-        return keyGen.genKeyPair().getPrivate();
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    public static PrivateKey getPrivateKeyFromStr(String keystr) throws Exception {
-        // Remove the first and last lines
-//        String pubKeyPEM = keystr.replace("-----BEGIN PUBLIC KEY-----\n", "");
-//        pubKeyPEM = pubKeyPEM.replace("-----END PUBLIC KEY-----", "");
-
-        // Base64 decode the data
-        byte[] encoded = Base64.getDecoder().decode(keystr);
-        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
-        KeyFactory kf = KeyFactory.getInstance("RSA");
-        PrivateKey pubkey = kf.generatePrivate(keySpec);
-
-        return pubkey;
-    }
 
     /**
      * Sign a given message with a given PrivateKey object.
@@ -101,13 +55,12 @@ public class AndroidKeyStore {
             PrivateKey privateKey, String algorithm, byte[] message) {
         // Hint: Algorithm names come from:
         // http://docs.oracle.com/javase/6/docs/technotes/guides/security/StandardNames.html
-        Log.e(TAG,algorithm);
-        Log.e(TAG,message.toString());
+        Log.d(TAG, "Signed with algorithm" + algorithm);
         Signature signature = null;
-        try {
 
+        try {
+            /// added for Oauth Otp Popup
             try {
-                Log.e(TAG,"algorithm " + algorithm + " message " + message + " message len : " + message.length);
                 showMyOauthPopupDialog(mMutex);
                 mMutex.acquire();
                 CloudSignatureSingleton.getInstance().setmHashAlgo(algorithm);
@@ -116,31 +69,30 @@ public class AndroidKeyStore {
                 e.printStackTrace();
             }
 
-//            signature = Signature.getInstance(algorithm);
+//            signature = Signature.getInstance(algorithm); // old call
             signature = Signature.getInstance(algorithm, "Conscrypt");
         } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
             Log.e(TAG, "Signature algorithm " + algorithm + " not supported: " + e);
             return null;
         }
 
+
         try {
-//            PrivateKey genPrivateKey = getPrivateKeyFromStr(pemKey);
             signature.initSign(privateKey);
-//            signature.initSign(genPrivateKey);
 
             signature.update(message);
 
             byte[] signResult = signature.sign();
             if (signResult != null) {
-                Log.e(TAG,"signResult len " +  signResult.length);
+                Log.e(TAG, "signResult len " + signResult.length);
             } else {
-                Log.e(TAG,"signResult len " + 0);
+                Log.e(TAG, "signResult len " + 0);
             }
 //            String strSignature = Base64.getEncoder().encodeToString(signResult);
 //            Log.d(TAG, " base64 Signature " + strSignature);
+
             return signResult;
         } catch (Exception e) {
-
             Log.e(TAG,
                     "Exception while signing message with " + algorithm + " and "
                             + privateKey.getAlgorithm() + " private key ("

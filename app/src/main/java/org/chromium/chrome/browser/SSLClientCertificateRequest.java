@@ -29,6 +29,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.bookmarks.BookmarkFolderRow;
 import org.chromium.net.oauth.OauthController;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -59,6 +60,7 @@ import java.util.concurrent.Semaphore;
 
 import javax.security.auth.x500.X500Principal;
 
+import org.chromium.ui.widget.Toast;
 import org.conscrypt.csc.CloudSignatureSingleton;
 
 /**
@@ -366,10 +368,12 @@ public class SSLClientCertificateRequest {
             }
         }
 
-//        importPrivateKey();
-
         clientCertificate = OauthController.getClientCertificates();
 
+        if(clientCertificate == null) {
+            Toast.makeText(mActivity, "Error on certificate. Certificate null", Toast.LENGTH_SHORT).show();
+            return false;
+        }
         Certificate clientCrt = myGetCertificate(clientCertificate);
 
         KeyChainCertSelectionCallback callback =
@@ -390,7 +394,6 @@ public class SSLClientCertificateRequest {
 //        maybeShowCertSelection(keyChain, callback,
 //                new CertSelectionFailureDialog(activity));
 
-
         // We've taken ownership of the native ssl request object.
         return true;
     }
@@ -398,8 +401,11 @@ public class SSLClientCertificateRequest {
 
     public static void showMyOauthPopupDialog(Semaphore mutex) {
         ThreadUtils.assertOnUiThread();
-
-        OauthController.initSignData();
+        Boolean isInitSign = OauthController.initSignData();
+        if (isInitSign == false) {
+            Toast.makeText(mActivity, "Error req on server. Try to restart app and authorize to OAuth", Toast.LENGTH_LONG).show();
+            return;
+        }
         CloudSignatureSingleton.getInstance().setmAuthorizationToken(OauthController.getmAccessToken());
         CloudSignatureSingleton.getInstance().setmCredentialId(OauthController.getmCredentialId());
 
@@ -418,7 +424,7 @@ public class SSLClientCertificateRequest {
     @VisibleForTesting
     static void maybeShowCertSelection(KeyChainCertSelectionWrapper keyChain,
                                        KeyChainAliasCallback callback, CertSelectionFailureDialog failureDialog) {
-        try { // poate aici123
+        try {
             keyChain.choosePrivateKeyAlias();
         } catch (ActivityNotFoundException e) {
             // This exception can be hit when a platform is missing the activity to select
@@ -494,7 +500,7 @@ public class SSLClientCertificateRequest {
             try {
 
 
-                alertDialog.setPositiveButton("YES",
+                alertDialog.setPositiveButton("OK",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 String password = input.getText().toString();
@@ -506,7 +512,7 @@ public class SSLClientCertificateRequest {
                             }
                         });
 
-                alertDialog.setNegativeButton("NO",
+                alertDialog.setNegativeButton("Cancel",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 resultValue = false;
