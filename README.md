@@ -9,6 +9,9 @@
 
 ### Start Working
 - You can also build your own Android browser with this repository, the steps for building are the same with [Chromium project](https://github.com/kuoruan/Chromium-Android/ "Chromium source repo").
+- For TLS remote signing you need to modify the app\src\main\res\raw\remote_signing_json_config.json file with your credentials, server, and redirect uri.
+- The redirect uri need to be modified in AndroidManifest as well.
+- The cloud server used for remote signing is [Trans Sped test platfom](https://cloudsignature.transsped.ro "Transsped")
 
 ### Copyright & License
 Please see [LICENSE](https://chromium.googlesource.com/chromium/src/+/master/LICENSE).

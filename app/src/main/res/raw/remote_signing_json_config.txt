@@ -1,7 +1,7 @@
 {
-	"CLIENT_ID":"msdiverse",
-	"CLIENT_SECRET":"8KKhHnjKdYmAakc8",
-	"CLIENT_OAUTH_PIN":"Parola1!",
+	"CLIENT_ID":"client_id",
+	"CLIENT_SECRET":"client_secret",
+	"CLIENT_OAUTH_PIN":"client_pin",
 	"BASE_REDIRECT_URI":"com.csc.tls.auth",
 	"CSC_BASE_URI":"https://msign-test.transsped.ro/csc/v0/"
 }
